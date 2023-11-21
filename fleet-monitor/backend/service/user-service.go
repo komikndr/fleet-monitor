@@ -1,7 +1,6 @@
 package service
 
 import (
-	"encoding/json"
 	"fleet-monitor/backend/db"
 
 	"gorm.io/gorm"
@@ -58,26 +57,6 @@ func (s *UserService) UpdateUser(userID uint, userName string) error {
 	}
 
 	return nil
-}
-
-// CreateUserFromJSON creates a new user using JSON data.
-// Example JSON request for creating a user
-// userJSON := `{"userName": "Alice"}`
-// createUserFromJSON(userService, userJSON)
-func (s *UserService) CreateUserFromJSON(jsonStr string) (*db.User, error) {
-	var userData map[string]interface{}
-	if err := json.Unmarshal([]byte(jsonStr), &userData); err != nil {
-		return nil, err
-	}
-
-	userName, _ := userData["userName"].(string)
-
-	user, err := s.CreateUser(userName)
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
 }
 
 // //////////////// THIS SECTION ISNT TESTED YET///////////////////////

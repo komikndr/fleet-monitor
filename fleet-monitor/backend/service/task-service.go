@@ -1,7 +1,6 @@
 package service
 
 import (
-	"encoding/json"
 	"fleet-monitor/backend/db"
 
 	"gorm.io/gorm"
@@ -33,33 +32,6 @@ func (s *TaskService) CreateTask(userID, droneID int, startLon, startLat, endLon
 	}
 
 	if err := s.db.Create(task).Error; err != nil {
-		return nil, err
-	}
-
-	return task, nil
-}
-
-// CreateTaskFromJSON creates a new task using JSON data.
-// Input Example
-// taskJSON := `{"userId": 1, "droneId": 1, "startLon": 10.0, "startLat": 20.0, "endLon": 15.0, "endLat": 25.0,
-// "description": "Sample task"}`
-// createTaskFromJSON(taskService, taskJSON)
-func (s *TaskService) CreateTaskFromJSON(jsonStr string) (*db.Task, error) {
-	var taskData map[string]interface{}
-	if err := json.Unmarshal([]byte(jsonStr), &taskData); err != nil {
-		return nil, err
-	}
-
-	userID, _ := taskData["userId"].(float64)
-	droneID, _ := taskData["droneId"].(float64)
-	startLon, _ := taskData["startLon"].(float64)
-	startLat, _ := taskData["startLat"].(float64)
-	endLon, _ := taskData["endLon"].(float64)
-	endLat, _ := taskData["endLat"].(float64)
-	description, _ := taskData["description"].(string)
-
-	task, err := s.CreateTask(int(userID), int(droneID), startLon, startLat, endLon, endLat, description)
-	if err != nil {
 		return nil, err
 	}
 

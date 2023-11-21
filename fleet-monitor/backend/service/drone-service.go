@@ -1,7 +1,6 @@
 package service
 
 import (
-	"encoding/json"
 	"fleet-monitor/backend/db"
 
 	"gorm.io/gorm"
@@ -61,7 +60,7 @@ func (s *DroneService) GetAllDrones() ([]db.Drone, error) {
 	return drones, nil
 }
 
-func (s *UserService) GetDronesByUserName(userName string) ([]db.Drone, error) {
+func (s *DroneService) GetDronesByUserName(userName string) ([]db.Drone, error) {
 	var drones []db.Drone
 	var user db.User
 
@@ -128,32 +127,44 @@ func (s *DroneService) DeleteDroneByID(droneID int) error {
 	return nil
 }
 
+func (s *DroneService) GetDroneByID(droneID int) (*db.Drone, error) {
+	var drone db.Drone
+
+	// Find the drone by ID
+	if err := s.db.First(&drone, droneID).Error; err != nil {
+		return nil, err
+	}
+
+	return &drone, nil
+}
+
 // CreateDroneFromJSON creates a new drone using JSON data.
 // Example JSON request for creating a drone
 // droneJSON := `{"mavlinkId": "ABC456", "ownerId": 2}`
 // createDroneFromJSON(droneService, droneJSON)
-func (s *DroneService) CreateDroneFromJSON(jsonStr string) (*db.Drone, error) {
-	var droneData map[string]interface{}
-	if err := json.Unmarshal([]byte(jsonStr), &droneData); err != nil {
-		return nil, err
-	}
+// func (s *DroneService) CreateDroneFromJSON(jsonStr string) (*db.Drone, error) {
+// 	var droneData map[string]interface{}
+// 	if err := json.Unmarshal([]byte(jsonStr), &droneData); err != nil {
+// 		return nil, err
+// 	}
 
-	mavlinkID, _ := droneData["mavlinkId"].(string)
-	ownerID, _ := droneData["ownerId"].(float64)
+// 	mavlinkID, _ := droneData["mavlinkId"].(string)
+// 	ownerID, _ := droneData["ownerId"].(float64)
 
-	drone, err := s.CreateDrone(mavlinkID, int(ownerID))
-	if err != nil {
-		return nil, err
-	}
+// 	drone, err := s.CreateDrone(mavlinkID, int(ownerID))
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	return drone, nil
-}
+// 	return drone, nil
+// }
 
 // UpdateDroneRealTime updates the drone's velocity and GPS information based on JSON data.
 // Input example
 // velocity := Velocity{X: 2.0, Y: 1.0, Z: 0.5}
 // gps := GPS{Latitude: 40.0, Longitude: -75.0}
 // altitude := 100.0
+// THIS IS NOT BEING TESTED FOR REALTIME DB APPLICATION, MIGHT CAUSE SYSTEM LAG
 func (s *DroneService) UpdateDroneRealTime(drone *db.Drone, velocity db.Velocity, gps db.GPS, altitude float64, battery int, status db.FlyingStatus) error {
 	drone.Velocity = velocity
 	drone.GPS = gps
