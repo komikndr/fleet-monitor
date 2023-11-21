@@ -1,12 +1,4 @@
-// package main
-
-// import "fleet-monitor/backend/wails"
-
-// func main() {
-// 	wails.Run()
-// }
-
-package main
+package app
 
 import (
 	"fleet-monitor/backend/db"
@@ -14,16 +6,16 @@ import (
 	"fmt"
 )
 
-func main() {
-	sql_db, err := db.OpenDB("tasks.db")
+func app() {
+	db, err := db.OpenDB("tasks.db")
 	if err != nil {
 		fmt.Println("Error connecting to the database:", err)
 		return
 	}
 
-	userService := service.NewUserService(sql_db)
-	droneService := service.NewDroneService(sql_db)
-	taskService := service.NewTaskService(sql_db)
+	userService := service.NewUserService(db)
+	droneService := service.NewDroneService(db)
+	taskService := service.NewTaskService(db)
 
 	userID := 1
 
