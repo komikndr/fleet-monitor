@@ -51,6 +51,83 @@ func (s *DroneService) UpdateDrone(droneID uint, mavlinkID string, ownerID int) 
 	return nil
 }
 
+func (s *DroneService) GetAllDrones() ([]db.Drone, error) {
+	var drones []db.Drone
+
+	if err := s.db.Find(&drones).Error; err != nil {
+		return nil, err
+	}
+
+	return drones, nil
+}
+
+func (s *UserService) GetDronesByUserName(userName string) ([]db.Drone, error) {
+	var drones []db.Drone
+	var user db.User
+
+	// Find the user by name
+	if err := s.db.Where("user_name = ?", userName).First(&user).Error; err != nil {
+		return nil, err
+	}
+
+	// Find all drones associated with the user
+	if err := s.db.Model(&user).Association("Drones").Find(&drones); err != nil {
+		return nil, err
+	}
+
+	return drones, nil
+}
+
+func (s *DroneService) GetDronesByTaskStatus(taskStatus db.TaskStatus) ([]db.Drone, error) {
+	var drones []db.Drone
+	var tasks []db.Task
+
+	// Find tasks with the specified TaskStatus
+	if err := s.db.Where("status = ?", taskStatus).Find(&tasks).Error; err != nil {
+		return nil, err
+	}
+
+	// Extract drone IDs from the tasks
+	var droneIDs []int
+	for _, task := range tasks {
+		droneIDs = append(droneIDs, task.DroneID)
+	}
+
+	// Find drones with the extracted IDs
+	if err := s.db.Find(&drones, droneIDs).Error; err != nil {
+		return nil, err
+	}
+
+	return drones, nil
+}
+
+func (s *DroneService) GetDronesByFlightStatus(flightStatus db.FlyingStatus) ([]db.Drone, error) {
+	var drones []db.Drone
+
+	// Find drones with the specified FlightStatus
+	if err := s.db.Where("flight_status = ?", flightStatus).Find(&drones).Error; err != nil {
+		return nil, err
+	}
+
+	return drones, nil
+}
+
+func (s *DroneService) DeleteDroneByID(droneID int) error {
+	var drone db.Drone
+
+	// Find the drone by ID
+	if err := s.db.First(&drone, droneID).Error; err != nil {
+		return err
+	}
+
+	// Delete the drone
+	if err := s.db.Delete(&drone).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // CreateDroneFromJSON creates a new drone using JSON data.
 // Example JSON request for creating a drone
 // droneJSON := `{"mavlinkId": "ABC456", "ownerId": 2}`

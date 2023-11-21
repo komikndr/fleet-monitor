@@ -32,6 +32,17 @@ func (s *UserService) CreateUser(userName string) (*db.User, error) {
 	return user, nil
 }
 
+func (s *UserService) GetAllUsernames() ([]string, error) {
+	var usernames []string
+
+	// Select only the username column
+	if err := s.db.Model(&db.User{}).Pluck("username", &usernames).Error; err != nil {
+		return nil, err
+	}
+
+	return usernames, nil
+}
+
 // UpdateUser updates the user with the given ID and sets its details.
 func (s *UserService) UpdateUser(userID uint, userName string) error {
 	var user db.User
@@ -67,4 +78,63 @@ func (s *UserService) CreateUserFromJSON(jsonStr string) (*db.User, error) {
 	}
 
 	return user, nil
+}
+
+// //////////////// THIS SECTION ISNT TESTED YET///////////////////////
+func (s *UserService) DeleteUserByID(userID int) error {
+	var user db.User
+
+	if err := s.db.First(&user, userID).Error; err != nil {
+		return err
+	}
+
+	if err := s.db.Delete(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DeleteUserByName deletes a user by username.
+func (s *UserService) DeleteUserByName(username string) error {
+	var user db.User
+
+	if err := s.db.Where("user_name = ?", username).First(&user).Error; err != nil {
+		return err
+	}
+
+	if err := s.db.Delete(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DeleteUser deletes a user by either username or user ID.
+// If the provided value is numeric, it's considered as the user ID.
+// If the provided value is a string, it's considered as the username.
+// DeleteUser deletes a user by either username or user ID.
+// If the provided value is not int, it's considered as the username.
+func (s *UserService) DeleteUser(identifier interface{}) error {
+	var user db.User
+
+	// If identifier is not of type int, assume it's a username
+	if _, ok := identifier.(int); !ok {
+		// Delete by username
+		if err := s.db.Where("user_name = ?", identifier).First(&user).Error; err != nil {
+			return err
+		}
+	} else {
+		// Delete by user ID
+		if err := s.db.First(&user, identifier).Error; err != nil {
+			return err
+		}
+	}
+
+	// Delete the user
+	if err := s.db.Delete(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

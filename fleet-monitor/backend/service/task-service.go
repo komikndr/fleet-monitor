@@ -39,25 +39,6 @@ func (s *TaskService) CreateTask(userID, droneID int, startLon, startLat, endLon
 	return task, nil
 }
 
-// UpdateTask updates the task with the given ID and sets its status to the provided status.
-// Example
-// taskService.UpdateTask(task.ID, TaskStatusOngoing)
-func (s *TaskService) UpdateTask(taskID uint, status db.TaskStatus) error {
-	var task db.Task
-
-	if err := s.db.First(&task, taskID).Error; err != nil {
-		return err
-	}
-
-	task.Status = status
-
-	if err := s.db.Save(&task).Error; err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // CreateTaskFromJSON creates a new task using JSON data.
 // Input Example
 // taskJSON := `{"userId": 1, "droneId": 1, "startLon": 10.0, "startLat": 20.0, "endLon": 15.0, "endLat": 25.0,
@@ -83,4 +64,44 @@ func (s *TaskService) CreateTaskFromJSON(jsonStr string) (*db.Task, error) {
 	}
 
 	return task, nil
+}
+
+// UpdateTask updates the task with the given ID and sets its status to the provided status.
+// Example
+// taskService.UpdateTask(task.ID, TaskStatusOngoing)
+func (s *TaskService) UpdateTask(taskID uint, status db.TaskStatus) error {
+	var task db.Task
+
+	if err := s.db.First(&task, taskID).Error; err != nil {
+		return err
+	}
+
+	task.Status = status
+
+	if err := s.db.Save(&task).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *TaskService) GetAllTasks() ([]db.Task, error) {
+	var tasks []db.Task
+
+	if err := s.db.Find(&tasks).Error; err != nil {
+		return nil, err
+	}
+
+	return tasks, nil
+}
+
+func (s *TaskService) GetTasksByStatus(taskStatus db.TaskStatus) ([]db.Task, error) {
+	var tasks []db.Task
+
+	// Find tasks with the specified TaskStatus
+	if err := s.db.Where("status = ?", taskStatus).Find(&tasks).Error; err != nil {
+		return nil, err
+	}
+
+	return tasks, nil
 }
